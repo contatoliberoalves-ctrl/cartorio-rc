@@ -12,10 +12,16 @@ export default function PapelariaView({ store }) {
   const aReceber   = vendas.filter(v => !v.pago).reduce((a, v) => a + Number(v.valor) * v.qtd, 0);
   const totalGeral = vendas.reduce((a, v) => a + Number(v.valor) * v.qtd, 0);
 
-  const emptyVenda = () => ({ servico: 'xerox_pb', qtd: 1, valor: 0.50, data: hoje(), pago: true });
+  const emptyVenda = () => ({ servico: 'xerox_pb', custom: '', qtd: 1, valor: 0.50, data: hoje(), pago: true });
   const openNew = () => setModal(emptyVenda());
-  const onServ  = (id) => setModal(m => ({ ...m, servico: id, valor: servInfo(id).valor }));
-  const save    = () => { store.addVenda(modal); setModal(null); };
+  const onServ  = (id) => setModal(m => ({ ...m, servico: id, valor: id === 'outro' ? 0 : servInfo(id).valor }));
+  const save    = () => {
+    const servico = modal.servico === 'outro' ? (modal.custom || '').trim() : modal.servico;
+    if (!servico) return;
+    const { custom, ...venda } = modal;
+    store.addVenda({ ...venda, servico });
+    setModal(null);
+  };
 
   return (
     <div>
@@ -78,8 +84,15 @@ export default function PapelariaView({ store }) {
             <Field label="Serviço" wide>
               <select value={modal.servico} onChange={e => onServ(e.target.value)}>
                 {PAPELARIA.map(p => <option key={p.id} value={p.id}>{p.label} — {BRL(p.valor)}</option>)}
+                <option value="outro">Outro (digitar item)</option>
               </select>
             </Field>
+            {modal.servico === 'outro' && (
+              <Field label="Nome do item/serviço" wide>
+                <input value={modal.custom} onChange={e => setModal(m => ({ ...m, custom: e.target.value }))}
+                  placeholder="Ex.: Plastificação A4" />
+              </Field>
+            )}
             <Field label="Quantidade">
               <input type="number" min="1" value={modal.qtd}
                 onChange={e => setModal(m => ({ ...m, qtd: parseInt(e.target.value) || 1 }))} />
