@@ -36,6 +36,7 @@ body {
   font-size: 14px;
 }
 #root, .app { height: 100%; }
+.app { display: flex; }
 h1, .topbar h1, .brand-name, .section-title h2, .modal-head h3, .ia-welcome h3, .ia-title {
   font-family: var(--font-head, "Poppins"), sans-serif;
 }
