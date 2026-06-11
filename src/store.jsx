@@ -66,29 +66,68 @@ export function useStore() {
     loading,
     error,
 
-    addPedido:    async (p)        => { return await supabase.from('pedidos').insert(p); },
-    updatePedido: async (id, patch) => { return await supabase.from('pedidos').update({ ...patch, updated_at: new Date().toISOString() }).eq('id', id); },
-    delPedido:    async (id)       => { return await supabase.from('pedidos').delete().eq('id', id); },
+    addPedido: async (p) => {
+      const r = await supabase.from('pedidos').insert(p).select();
+      if (!r.error && r.data) setPedidos(prev => [r.data[0], ...prev]);
+      return r;
+    },
+    updatePedido: async (id, patch) => {
+      const r = await supabase.from('pedidos').update({ ...patch, updated_at: new Date().toISOString() }).eq('id', id).select();
+      if (!r.error && r.data) setPedidos(prev => prev.map(x => x.id === id ? r.data[0] : x));
+      return r;
+    },
+    delPedido: async (id) => {
+      const r = await supabase.from('pedidos').delete().eq('id', id);
+      if (!r.error) setPedidos(prev => prev.filter(x => x.id !== id));
+      return r;
+    },
 
-    addVenda:    async (v)        => { return await supabase.from('vendas').insert(v); },
-    updateVenda: async (id, patch) => { return await supabase.from('vendas').update(patch).eq('id', id); },
-    delVenda:    async (id)       => { return await supabase.from('vendas').delete().eq('id', id); },
+    addVenda: async (v) => {
+      const r = await supabase.from('vendas').insert(v).select();
+      if (!r.error && r.data) setVendas(prev => [r.data[0], ...prev]);
+      return r;
+    },
+    updateVenda: async (id, patch) => {
+      const r = await supabase.from('vendas').update(patch).eq('id', id).select();
+      if (!r.error && r.data) setVendas(prev => prev.map(x => x.id === id ? r.data[0] : x));
+      return r;
+    },
+    delVenda: async (id) => {
+      const r = await supabase.from('vendas').delete().eq('id', id);
+      if (!r.error) setVendas(prev => prev.filter(x => x.id !== id));
+      return r;
+    },
 
     toggleComunic: async (key) => {
       if (comunicacoes[key]) {
-        return await supabase.from('comunicacoes_feitas').delete().eq('periodo_key', key);
+        const r = await supabase.from('comunicacoes_feitas').delete().eq('periodo_key', key);
+        if (!r.error) setComunicacoes(prev => { const next = { ...prev }; delete next[key]; return next; });
+        return r;
       } else {
         const comId = key.split('-')[0];
-        return await supabase.from('comunicacoes_feitas').insert({ periodo_key: key, comunicacao_id: comId });
+        const r = await supabase.from('comunicacoes_feitas').insert({ periodo_key: key, comunicacao_id: comId });
+        if (!r.error) setComunicacoes(prev => ({ ...prev, [key]: true }));
+        return r;
       }
     },
 
-    addTarefa:    async (texto) => { return await supabase.from('tarefas').insert({ texto, feito: false }); },
+    addTarefa: async (texto) => {
+      const r = await supabase.from('tarefas').insert({ texto, feito: false }).select();
+      if (!r.error && r.data) setTarefas(prev => [...prev, r.data[0]]);
+      return r;
+    },
     toggleTarefa: async (id) => {
       const t = tarefas.find(x => x.id === id);
-      return t ? await supabase.from('tarefas').update({ feito: !t.feito }).eq('id', id) : Promise.resolve();
+      if (!t) return Promise.resolve({ error: null });
+      const r = await supabase.from('tarefas').update({ feito: !t.feito }).eq('id', id).select();
+      if (!r.error && r.data) setTarefas(prev => prev.map(x => x.id === id ? r.data[0] : x));
+      return r;
     },
-    delTarefa: async (id) => { return await supabase.from('tarefas').delete().eq('id', id); },
+    delTarefa: async (id) => {
+      const r = await supabase.from('tarefas').delete().eq('id', id);
+      if (!r.error) setTarefas(prev => prev.filter(x => x.id !== id));
+      return r;
+    },
   }), [pedidos, vendas, comunicacoes, tarefas, loading, error]);
 
   return api;
