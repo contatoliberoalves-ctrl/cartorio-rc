@@ -66,29 +66,29 @@ export function useStore() {
     loading,
     error,
 
-    addPedido:    (p)        => supabase.from('pedidos').insert(p),
-    updatePedido: (id, patch) => supabase.from('pedidos').update({ ...patch, updated_at: new Date().toISOString() }).eq('id', id),
-    delPedido:    (id)       => supabase.from('pedidos').delete().eq('id', id),
+    addPedido:    async (p)        => { return await supabase.from('pedidos').insert(p); },
+    updatePedido: async (id, patch) => { return await supabase.from('pedidos').update({ ...patch, updated_at: new Date().toISOString() }).eq('id', id); },
+    delPedido:    async (id)       => { return await supabase.from('pedidos').delete().eq('id', id); },
 
-    addVenda:    (v)        => supabase.from('vendas').insert(v),
-    updateVenda: (id, patch) => supabase.from('vendas').update(patch).eq('id', id),
-    delVenda:    (id)       => supabase.from('vendas').delete().eq('id', id),
+    addVenda:    async (v)        => { return await supabase.from('vendas').insert(v); },
+    updateVenda: async (id, patch) => { return await supabase.from('vendas').update(patch).eq('id', id); },
+    delVenda:    async (id)       => { return await supabase.from('vendas').delete().eq('id', id); },
 
-    toggleComunic: (key) => {
+    toggleComunic: async (key) => {
       if (comunicacoes[key]) {
-        return supabase.from('comunicacoes_feitas').delete().eq('periodo_key', key);
+        return await supabase.from('comunicacoes_feitas').delete().eq('periodo_key', key);
       } else {
         const comId = key.split('-')[0];
-        return supabase.from('comunicacoes_feitas').insert({ periodo_key: key, comunicacao_id: comId });
+        return await supabase.from('comunicacoes_feitas').insert({ periodo_key: key, comunicacao_id: comId });
       }
     },
 
-    addTarefa:    (texto) => supabase.from('tarefas').insert({ texto, feito: false }),
-    toggleTarefa: (id) => {
+    addTarefa:    async (texto) => { return await supabase.from('tarefas').insert({ texto, feito: false }); },
+    toggleTarefa: async (id) => {
       const t = tarefas.find(x => x.id === id);
-      return t ? supabase.from('tarefas').update({ feito: !t.feito }).eq('id', id) : Promise.resolve();
+      return t ? await supabase.from('tarefas').update({ feito: !t.feito }).eq('id', id) : Promise.resolve();
     },
-    delTarefa: (id) => supabase.from('tarefas').delete().eq('id', id),
+    delTarefa: async (id) => { return await supabase.from('tarefas').delete().eq('id', id); },
   }), [pedidos, vendas, comunicacoes, tarefas, loading, error]);
 
   return api;
