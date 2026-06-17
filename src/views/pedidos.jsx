@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Icon } from '../icons.jsx';
 import { Button, Field, Toggle, Modal, Empty, StatusBadge, PagamentoBadge } from '../components.jsx';
 import { BRL, fmtData, hoje, tipoInfo } from '../utils.js';
@@ -11,12 +11,61 @@ const CATS = {
 };
 
 const emptyPedido = (categoria) => ({
+  id: crypto.randomUUID(),
   categoria, nome: '', cpf: '', tipo: '2via_casamento', protocolo: '', cartorio: '',
   data: hoje(), livro: '', matricula: '', folha: '',
   gratuito: false, pago: false, valor: 55.62, status: 'pendente', funcionaria: '', obs: '',
+  documentos: [],
 });
 
-function PedidoForm({ value, onChange }) {
+const fmtSize = (bytes) => !bytes ? '' : bytes < 1048576
+  ? `${(bytes / 1024).toFixed(0)} KB`
+  : `${(bytes / 1048576).toFixed(1)} MB`;
+
+function DocSection({ saved, pending, onAddFiles, onRemoveSaved, onRemovePending }) {
+  const inputRef = useRef(null);
+  return (
+    <div className="doc-section field-wide">
+      <span className="field-label">Documentos e fotos</span>
+      {saved.length === 0 && pending.length === 0 && (
+        <div style={{ color: 'var(--muted)', fontSize: 12.5, marginBottom: 6 }}>Nenhum arquivo anexado.</div>
+      )}
+      {saved.map((doc, i) => (
+        <div key={`s-${i}`} className="doc-item">
+          <Icon name="file" size={16} />
+          <div className="doc-info">
+            <div className="doc-name">{doc.name}</div>
+            <div className="doc-size">{fmtSize(doc.size)}</div>
+          </div>
+          <button type="button" className="icon-btn danger" title="Remover" onClick={() => onRemoveSaved(i)}>
+            <Icon name="x" size={14} />
+          </button>
+        </div>
+      ))}
+      {pending.map((file, i) => (
+        <div key={`p-${i}`} className="doc-item pending">
+          <Icon name="file" size={16} />
+          <div className="doc-info">
+            <div className="doc-name">{file.name}</div>
+            <div className="doc-size">{fmtSize(file.size)} · pendente</div>
+          </div>
+          <button type="button" className="icon-btn danger" title="Remover" onClick={() => onRemovePending(i)}>
+            <Icon name="x" size={14} />
+          </button>
+        </div>
+      ))}
+      <button type="button" className="btn btn-ghost btn-sm" style={{ marginTop: 8 }}
+        onClick={() => inputRef.current?.click()}>
+        <Icon name="plus" size={15} /> Adicionar arquivo ou foto
+      </button>
+      <input ref={inputRef} type="file" multiple accept="image/*,.pdf"
+        style={{ display: 'none' }}
+        onChange={e => { onAddFiles(Array.from(e.target.files)); e.target.value = ''; }} />
+    </div>
+  );
+}
+
+function PedidoForm({ value, onChange, pendingFiles, onAddFiles, onRemoveSaved, onRemovePending }) {
   const set = (k, v) => onChange({ ...value, [k]: v });
   const onTipo = (id) => {
     const info = tipoInfo(id);
@@ -81,7 +130,70 @@ function PedidoForm({ value, onChange }) {
       <Field label="Observações" wide>
         <textarea rows="2" value={value.obs} onChange={e => set('obs', e.target.value)} placeholder="Anotações internas" />
       </Field>
+      <DocSection
+        saved={value.documentos || []}
+        pending={pendingFiles || []}
+        onAddFiles={onAddFiles}
+        onRemoveSaved={onRemoveSaved}
+        onRemovePending={onRemovePending}
+      />
     </div>
+  );
+}
+
+function DocsModal({ pedido, onClose, store }) {
+  const [urls, setUrls] = useState({});
+  const [loadingUrls, setLoadingUrls] = useState(true);
+
+  useEffect(() => {
+    if (!pedido?.documentos?.length) { setLoadingUrls(false); return; }
+    Promise.all(
+      pedido.documentos.map(doc =>
+        store.getDocUrl(doc.path).then(url => [doc.path, url])
+      )
+    ).then(pairs => {
+      setUrls(Object.fromEntries(pairs));
+      setLoadingUrls(false);
+    });
+  }, []);
+
+  if (!pedido) return null;
+  const docs = pedido.documentos || [];
+
+  return (
+    <Modal open title={`Documentos — ${pedido.nome || 'Pedido'}`} onClose={onClose}>
+      {loadingUrls ? (
+        <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--muted)', fontSize: 13 }}>
+          Carregando…
+        </div>
+      ) : docs.length === 0 ? (
+        <Empty>Nenhum documento anexado.</Empty>
+      ) : (
+        <div className="docs-view-list">
+          {docs.map((doc, i) => {
+            const url = urls[doc.path];
+            const isImage = doc.type?.startsWith('image/');
+            return (
+              <div key={i} className="doc-view-item">
+                {isImage && url
+                  ? <img src={url} alt={doc.name} className="doc-thumb" />
+                  : <span className="doc-view-icon"><Icon name="file" size={24} /></span>
+                }
+                <div className="doc-info">
+                  <div className="doc-name">{doc.name}</div>
+                  <div className="doc-size">{fmtSize(doc.size)}</div>
+                </div>
+                {url && (
+                  <a href={url} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm">
+                    Abrir
+                  </a>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </Modal>
   );
 }
 
@@ -89,6 +201,8 @@ export default function PedidosView({ store, hideValores }) {
   const [cat, setCat] = useState('enviado');
   const [q, setQ] = useState('');
   const [modal, setModal] = useState(null);
+  const [docsModal, setDocsModal] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   const lista = store.state.pedidos
     .filter(p => p.categoria === cat)
@@ -101,12 +215,44 @@ export default function PedidosView({ store, hideValores }) {
   const aReceber = lista.filter(p => !p.gratuito && !p.pago).reduce((a, p) => a + Number(p.valor), 0);
   const recebido = lista.filter(p => !p.gratuito && p.pago).reduce((a, p) => a + Number(p.valor), 0);
 
-  const openNew  = () => setModal({ mode: 'new',  data: emptyPedido(cat) });
-  const openEdit = (p) => setModal({ mode: 'edit', data: { ...p } });
-  const save = () => {
-    if (modal.mode === 'new') store.addPedido(modal.data);
-    else store.updatePedido(modal.data.id, modal.data);
-    setModal(null);
+  const openNew  = () => setModal({ mode: 'new', data: emptyPedido(cat), pendingFiles: [], removedDocs: [] });
+  const openEdit = (p) => setModal({ mode: 'edit', data: { ...p, documentos: p.documentos || [] }, pendingFiles: [], removedDocs: [] });
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      let documentos = [...(modal.data.documentos || [])];
+      for (const file of (modal.pendingFiles || [])) {
+        const doc = await store.uploadPedidoDoc(modal.data.id, file);
+        documentos.push(doc);
+      }
+      for (const doc of (modal.removedDocs || [])) {
+        await store.deleteDoc(doc.path).catch(() => {});
+      }
+      const pedidoData = { ...modal.data, documentos };
+      if (modal.mode === 'new') await store.addPedido(pedidoData);
+      else await store.updatePedido(pedidoData.id, pedidoData);
+      setModal(null);
+    } catch (e) {
+      alert('Erro ao salvar: ' + e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const addFiles = (files) =>
+    setModal(m => ({ ...m, pendingFiles: [...(m.pendingFiles || []), ...files] }));
+
+  const removePending = (idx) =>
+    setModal(m => ({ ...m, pendingFiles: m.pendingFiles.filter((_, i) => i !== idx) }));
+
+  const removeSaved = (idx) => {
+    const doc = modal.data.documentos[idx];
+    setModal(m => ({
+      ...m,
+      data: { ...m.data, documentos: m.data.documentos.filter((_, i) => i !== idx) },
+      removedDocs: [...(m.removedDocs || []), doc],
+    }));
   };
 
   return (
@@ -167,6 +313,13 @@ export default function PedidosView({ store, hideValores }) {
                 <td className="mono">{p.gratuito ? '—' : BRL(Number(p.valor))}</td>
                 <td>
                   <div className="row-actions">
+                    {(p.documentos?.length > 0) && (
+                      <button className="icon-btn doc-count-btn" title={`${p.documentos.length} documento(s)`}
+                        onClick={() => setDocsModal(p)}>
+                        <Icon name="file" size={14} />
+                        <span>{p.documentos.length}</span>
+                      </button>
+                    )}
                     {!p.gratuito && !p.pago && (
                       <button className="icon-btn ok" title="Marcar como pago"
                         onClick={() => store.updatePedido(p.id, { pago: true })}>
@@ -190,10 +343,23 @@ export default function PedidosView({ store, hideValores }) {
         title={modal?.mode === 'new' ? `Novo pedido — ${CATS[cat]?.label}` : 'Editar pedido'}
         footer={<>
           <Button variant="ghost" onClick={() => setModal(null)}>Cancelar</Button>
-          <Button icon="check" onClick={save}>Salvar</Button>
+          <Button icon="check" onClick={save} disabled={saving}>
+            {saving ? 'Salvando…' : 'Salvar'}
+          </Button>
         </>}>
-        {modal && <PedidoForm value={modal.data} onChange={data => setModal({ ...modal, data })} />}
+        {modal && (
+          <PedidoForm
+            value={modal.data}
+            onChange={data => setModal(m => ({ ...m, data }))}
+            pendingFiles={modal.pendingFiles}
+            onAddFiles={addFiles}
+            onRemoveSaved={removeSaved}
+            onRemovePending={removePending}
+          />
+        )}
       </Modal>
+
+      <DocsModal pedido={docsModal} onClose={() => setDocsModal(null)} store={store} />
     </div>
   );
 }
