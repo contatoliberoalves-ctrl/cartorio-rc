@@ -2,12 +2,33 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from './lib/supabase.js';
 
 export function useStore() {
+  const [session, setSession] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [profile, setProfile] = useState(null);
   const [pedidos, setPedidos] = useState([]);
   const [vendas, setVendas] = useState([]);
   const [comunicacoes, setComunicacoes] = useState({});
   const [tarefas, setTarefas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setAuthChecked(true);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
+      setSession(sess);
+      setAuthChecked(true);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!session) { setProfile(null); return; }
+    supabase.from('profiles').select('*').eq('id', session.user.id).single()
+      .then(r => { if (!r.error) setProfile(r.data); });
+  }, [session]);
 
   const fetchAll = useCallback(async () => {
     try {
@@ -32,6 +53,8 @@ export function useStore() {
   }, []);
 
   useEffect(() => {
+    if (!session) { setLoading(false); return; }
+    setLoading(true);
     fetchAll();
 
     const ch = supabase.channel('cartorio-rt')
@@ -59,12 +82,18 @@ export function useStore() {
       .subscribe();
 
     return () => { supabase.removeChannel(ch); };
-  }, [fetchAll]);
+  }, [session, fetchAll]);
 
   const api = useMemo(() => ({
     state: { pedidos, vendas, comunicacoes, tarefas },
     loading,
     error,
+    session,
+    authChecked,
+    profile,
+
+    signIn:  async (email, password) => await supabase.auth.signInWithPassword({ email, password }),
+    signOut: async () => await supabase.auth.signOut(),
 
     addPedido: async (p) => {
       const r = await supabase.from('pedidos').insert(p).select();
@@ -128,7 +157,7 @@ export function useStore() {
       if (!r.error) setTarefas(prev => prev.filter(x => x.id !== id));
       return r;
     },
-  }), [pedidos, vendas, comunicacoes, tarefas, loading, error]);
+  }), [pedidos, vendas, comunicacoes, tarefas, loading, error, session, authChecked, profile]);
 
   return api;
 }

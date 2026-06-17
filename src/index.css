@@ -71,6 +71,32 @@ h1, .topbar h1, .brand-name, .section-title h2, .modal-head h3, .ia-welcome h3, 
 .sidebar-foot { padding: 16px 8px 4px; border-top: 1px solid rgba(255,255,255,.1); }
 .resp     { font-size: 13px; font-weight: 500; }
 .resp-sub { font-size: 12px; color: var(--green-300); margin-top: 2px; }
+.user-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.user-info { min-width: 0; overflow: hidden; }
+.user-info .resp { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.logout-btn {
+  flex-shrink: 0; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 9px;
+  border: 0; background: transparent; color: rgba(255,255,255,.7); cursor: pointer; transition: .15s;
+}
+.logout-btn:hover { background: rgba(255,255,255,.08); color: #fff; }
+
+/* ---------- Login ---------- */
+.login-wrap {
+  min-height: 100vh; width: 100%; display: grid; place-items: center;
+  background: var(--green-900); padding: 24px;
+}
+.login-card {
+  background: var(--bg); border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 36px 32px; width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 14px;
+}
+.login-brand { padding: 0 0 6px; }
+.login-brand .brand-sub { color: var(--green-700); }
+.login-title { margin: 0; font-size: 22px; font-weight: 600; }
+.login-sub { margin: -8px 0 6px; color: var(--muted); font-size: 13px; }
+.login-error {
+  display: flex; align-items: center; gap: 7px; color: var(--danger); background: var(--danger-bg);
+  border-radius: 10px; padding: 9px 12px; font-size: 12.5px;
+}
 
 /* ---------- Main ---------- */
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -315,6 +341,7 @@ textarea { resize: vertical; }
 .comm-card.tone-neutral { border-left-color: var(--line); }
 .comm-card.done { opacity: .62; }
 .comm-head  { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.comm-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .comm-name  { font-weight: 600; font-size: 14.5px; }
 .comm-freq  { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
 .comm-obj   { font-size: 13px; color: var(--ink-2); line-height: 1.45; }
@@ -360,6 +387,7 @@ textarea { resize: vertical; }
 .alert-row.tone-warn .alert-dot   { background: var(--warn); }
 .alert-row.tone-ok .alert-dot     { background: var(--green-700); }
 .alert-main { flex: 1; min-width: 0; }
+.alert-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .alert-name { font-weight: 500; font-size: 13.5px; }
 .alert-obj  { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .alert-right { text-align: right; }
@@ -421,6 +449,14 @@ textarea { resize: vertical; }
   display: flex; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--line); align-items: flex-end;
 }
 .ia-input textarea { flex: 1; resize: none; max-height: 120px; padding: 12px 14px; border-radius: 11px; }
+.ia-msg {
+  max-width: 80%; padding: 12px 14px; border-radius: 12px; font-size: 13.5px;
+  line-height: 1.6; white-space: pre-wrap; word-break: break-word;
+}
+.ia-msg.user      { align-self: flex-end; background: var(--green-700); color: #fff; border-bottom-right-radius: 3px; }
+.ia-msg.assistant { align-self: flex-start; background: var(--bg-soft); border: 1px solid var(--line); border-bottom-left-radius: 3px; }
+.ia-msg.error     { align-self: flex-start; background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn); }
+.ia-msg.ia-typing { color: var(--muted); font-style: italic; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1080px) {

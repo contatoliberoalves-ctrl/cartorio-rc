@@ -52,6 +52,13 @@ export function diasRestantes(dt, ref) {
   return Math.round((b - a) / 86400000);
 }
 
+export function urgenciaTag(dias) {
+  if (dias === null || dias === undefined) return null;
+  if (dias <= 3) return { tone: 'danger', label: 'Urgente' };
+  if (dias <= 7) return { tone: 'warn', label: 'Quase urgente' };
+  return { tone: 'ok', label: 'Tá perto' };
+}
+
 export function periodoKey(com, ref) {
   const now = ref || new Date();
   const y = now.getFullYear();

@@ -1,9 +1,9 @@
 import { Icon } from '../icons.jsx';
-import { StatCard, SectionTitle, Empty, StatusBadge, PagamentoBadge } from '../components.jsx';
-import { BRL, fmtData, tipoInfo, proximoVencimento, diasRestantes, periodoKey } from '../utils.js';
+import { StatCard, SectionTitle, Empty, StatusBadge, PagamentoBadge, Badge } from '../components.jsx';
+import { BRL, fmtData, tipoInfo, proximoVencimento, diasRestantes, periodoKey, urgenciaTag } from '../utils.js';
 import { COMUNICACOES } from '../data.js';
 
-export default function OverviewView({ store, go }) {
+export default function OverviewView({ store, go, hideValores }) {
   const now = new Date();
   const { pedidos, vendas } = store.state;
 
@@ -35,8 +35,8 @@ export default function OverviewView({ store, go }) {
   return (
     <div>
       <div className="stat-row four">
-        <StatCard label="A receber"             value={BRL(aRecPed + aRecVen)} sub="Pedidos + papelaria"      tone="warn"                             icon="clock"  />
-        <StatCard label="Recebido"              value={BRL(recPed  + recVen)}  sub="Pagamentos confirmados"    tone="green"                            icon="money"  />
+        <StatCard label="A receber"             value={hideValores ? '•••••' : BRL(aRecPed + aRecVen)} sub="Pedidos + papelaria"      tone="warn"                             icon={hideValores ? 'lock' : 'clock'}  />
+        <StatCard label="Recebido"              value={hideValores ? '•••••' : BRL(recPed  + recVen)}  sub="Pagamentos confirmados"    tone="green"                            icon={hideValores ? 'lock' : 'money'}  />
         <StatCard label="Pedidos em aberto"     value={pendentes}               sub={`${pedidos.length} no total`}                                      icon="file"   />
         <StatCard label="Comunicações a vencer" value={urgentes.length}         sub="Nos próximos 7 dias"       tone={urgentes.length ? 'danger' : 'ok'} icon="bell"  />
       </div>
@@ -48,11 +48,15 @@ export default function OverviewView({ store, go }) {
             {comAlertas.length === 0 && <Empty>Tudo em dia neste período. 🌿</Empty>}
             {comAlertas.slice(0, 5).map(c => {
               const tone = c.dias < 0 ? 'danger' : c.dias <= 3 ? 'danger' : c.dias <= 7 ? 'warn' : 'ok';
+              const tag = urgenciaTag(c.dias);
               return (
                 <div key={c.id} className={`alert-row tone-${tone}`}>
                   <span className="alert-dot" />
                   <div className="alert-main">
-                    <div className="alert-name">{c.nome}</div>
+                    <div className="alert-name-row">
+                      <div className="alert-name">{c.nome}</div>
+                      {tag && <Badge tone={tag.tone}>{tag.label}</Badge>}
+                    </div>
                     <div className="alert-obj">{c.objeto}</div>
                   </div>
                   <div className="alert-right">

@@ -4,7 +4,7 @@ import { Button, Field, Toggle, Modal, StatCard, SectionTitle, Empty } from '../
 import { BRL, fmtData, hoje, servInfo } from '../utils.js';
 import { PAPELARIA } from '../data.js';
 
-export default function PapelariaView({ store }) {
+export default function PapelariaView({ store, hideValores }) {
   const [modal, setModal] = useState(null);
   const vendas = store.state.vendas;
 
@@ -25,11 +25,13 @@ export default function PapelariaView({ store }) {
 
   return (
     <div>
-      <div className="stat-row">
-        <StatCard label="Recebido hoje"        value={BRL(totalDia)}   tone="green" icon="money" />
-        <StatCard label="A receber (pendente)" value={BRL(aReceber)}   tone="warn"  icon="clock" />
-        <StatCard label="Total lançado"        value={BRL(totalGeral)} sub={`${vendas.length} lançamentos`} icon="print" />
-      </div>
+      {!hideValores && (
+        <div className="stat-row">
+          <StatCard label="Recebido hoje"        value={BRL(totalDia)}   tone="green" icon="money" />
+          <StatCard label="A receber (pendente)" value={BRL(aReceber)}   tone="warn"  icon="clock" />
+          <StatCard label="Total lançado"        value={BRL(totalGeral)} sub={`${vendas.length} lançamentos`} icon="print" />
+        </div>
+      )}
 
       <div className="two-col">
         <div className="panel">

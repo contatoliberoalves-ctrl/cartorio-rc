@@ -85,7 +85,7 @@ function PedidoForm({ value, onChange }) {
   );
 }
 
-export default function PedidosView({ store }) {
+export default function PedidosView({ store, hideValores }) {
   const [cat, setCat] = useState('enviado');
   const [q, setQ] = useState('');
   const [modal, setModal] = useState(null);
@@ -130,10 +130,12 @@ export default function PedidosView({ store }) {
           <Icon name="search" size={17} />
           <input value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar por nome, CPF, protocolo, cartório…" />
         </div>
-        <div className="toolbar-stats">
-          <span className="mini-stat"><b className="warn-text">{BRL(aReceber)}</b> a receber</span>
-          <span className="mini-stat"><b className="ok-text">{BRL(recebido)}</b> recebido</span>
-        </div>
+        {!hideValores && (
+          <div className="toolbar-stats">
+            <span className="mini-stat"><b className="warn-text">{BRL(aReceber)}</b> a receber</span>
+            <span className="mini-stat"><b className="ok-text">{BRL(recebido)}</b> recebido</span>
+          </div>
+        )}
         <Button icon="plus" onClick={openNew}>Novo pedido</Button>
       </div>
 

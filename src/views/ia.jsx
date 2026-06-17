@@ -1,5 +1,7 @@
+import { useState, useRef, useEffect } from 'react';
 import { Icon } from '../icons.jsx';
 import { Button } from '../components.jsx';
+import { supabase } from '../lib/supabase.js';
 
 const SUGESTOES = [
   'Quais documentos para habilitação de casamento?',
@@ -11,6 +13,45 @@ const SUGESTOES = [
 ];
 
 export default function IAView() {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const endRef = useRef(null);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading]);
+
+  const send = async (texto) => {
+    const pergunta = (texto ?? input).trim();
+    if (!pergunta || loading) return;
+    const novas = [...messages, { role: 'user', content: pergunta }];
+    setMessages(novas);
+    setInput('');
+    setError(null);
+    setLoading(true);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('legal-assistant', {
+        body: { messages: novas },
+      });
+      if (fnError) throw fnError;
+      if (data?.error) throw new Error(data.error);
+      setMessages(m => [...m, { role: 'assistant', content: data.text }]);
+    } catch (e) {
+      setError(e.message || 'Erro ao consultar o assistente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  };
+
   return (
     <div className="ia-wrap">
       <div className="ia-side">
@@ -24,7 +65,7 @@ export default function IAView() {
         <div className="ia-sug-label">Perguntas frequentes</div>
         <div className="ia-sug">
           {SUGESTOES.map((s, i) => (
-            <div key={i} className="ia-chip" style={{ cursor: 'default', opacity: 0.6 }}>{s}</div>
+            <button key={i} className="ia-chip" onClick={() => send(s)} disabled={loading}>{s}</button>
           ))}
         </div>
         <div className="ia-disclaimer">
@@ -35,15 +76,24 @@ export default function IAView() {
 
       <div className="ia-chat">
         <div className="ia-msgs">
-          <div className="ia-welcome">
-            <span className="ia-spark big"><Icon name="sparkles" size={28} /></span>
-            <h3>Assistente em configuração</h3>
-            <p>Para ativar o assistente jurídico, configure uma Edge Function no Supabase que chame a API da Anthropic com o prompt do cartório. Consulte o README do projeto para as instruções de integração.</p>
-          </div>
+          {messages.length === 0 && (
+            <div className="ia-welcome">
+              <span className="ia-spark big"><Icon name="sparkles" size={28} /></span>
+              <h3>Assistente jurídico</h3>
+              <p>Tire dúvidas sobre registros civis, prazos e procedimentos. Use uma das perguntas frequentes ao lado ou digite sua pergunta abaixo.</p>
+            </div>
+          )}
+          {messages.map((m, i) => (
+            <div key={i} className={`ia-msg ${m.role}`}>{m.content}</div>
+          ))}
+          {loading && <div className="ia-msg assistant ia-typing">Consultando…</div>}
+          {error && <div className="ia-msg error">{error}</div>}
+          <div ref={endRef} />
         </div>
-        <div className="ia-input" style={{ opacity: 0.5, pointerEvents: 'none' }}>
-          <textarea rows="1" placeholder="Assistente indisponível — configure a API no backend…" disabled />
-          <Button icon="send" disabled>Enviar</Button>
+        <div className="ia-input">
+          <textarea rows="1" value={input} placeholder="Digite sua pergunta…"
+            onChange={e => setInput(e.target.value)} onKeyDown={onKeyDown} disabled={loading} />
+          <Button icon="send" onClick={() => send()} disabled={loading || !input.trim()}>Enviar</Button>
         </div>
       </div>
     </div>

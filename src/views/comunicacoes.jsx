@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Icon } from '../icons.jsx';
-import { Button, SectionTitle, Empty } from '../components.jsx';
-import { fmtData, hoje, proximoVencimento, diasRestantes, periodoKey } from '../utils.js';
+import { Button, Badge, SectionTitle, Empty } from '../components.jsx';
+import { fmtData, hoje, proximoVencimento, diasRestantes, periodoKey, urgenciaTag } from '../utils.js';
 import { COMUNICACOES } from '../data.js';
 
 export default function ComunicacoesView({ store }) {
@@ -56,7 +56,13 @@ export default function ComunicacoesView({ store }) {
           <div key={it.id} className={`comm-card tone-${alerta(it)}${it.feito ? ' done' : ''}`}>
             <div className="comm-head">
               <div>
-                <div className="comm-name">{it.nome}</div>
+                <div className="comm-name-row">
+                  <div className="comm-name">{it.nome}</div>
+                  {!it.feito && it.freq !== 'evento' && (() => {
+                    const tag = urgenciaTag(it.dias);
+                    return tag && <Badge tone={tag.tone}>{tag.label}</Badge>;
+                  })()}
+                </div>
                 <div className="comm-freq">{it.freq === 'evento' ? 'Por evento' : it.freq === 'trimestral' ? 'Trimestral' : 'Mensal'}</div>
               </div>
               {it.key && (

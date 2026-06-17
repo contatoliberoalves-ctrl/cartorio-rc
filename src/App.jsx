@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useStore } from './store.jsx';
 import { Icon } from './icons.jsx';
-import { INFO, COMUNICACOES } from './data.js';
+import { COMUNICACOES } from './data.js';
 import { hoje, fmtData, proximoVencimento, diasRestantes, periodoKey } from './utils.js';
+import Login             from './Login.jsx';
 import OverviewView     from './views/overview.jsx';
 import PedidosView      from './views/pedidos.jsx';
 import ComunicacoesView from './views/comunicacoes.jsx';
@@ -43,6 +44,18 @@ export default function App() {
     }).length;
   })();
 
+  if (!store.authChecked) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7670', fontSize: 14 }}>
+        Carregando…
+      </div>
+    );
+  }
+
+  if (!store.session) {
+    return <Login store={store} />;
+  }
+
   if (store.error) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -58,6 +71,9 @@ export default function App() {
   }
 
   const [title, subtitle] = TITULOS[view] || ['', ''];
+  const isFuncionaria = store.profile?.role === 'funcionaria';
+  const userLabel = store.profile?.nome || store.session.user.email;
+  const roleLabel = store.profile?.role === 'admin' ? 'Administrador(a)' : 'Funcionária';
 
   return (
     <div className="app">
@@ -79,8 +95,15 @@ export default function App() {
           ))}
         </nav>
         <div className="sidebar-foot">
-          <div className="resp">{INFO.responsavel}</div>
-          <div className="resp-sub">{INFO.cidade}</div>
+          <div className="user-row">
+            <div className="user-info">
+              <div className="resp">{userLabel}</div>
+              <div className="resp-sub">{roleLabel}</div>
+            </div>
+            <button className="logout-btn" title="Sair" onClick={() => store.signOut()}>
+              <Icon name="logout" size={17} />
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -101,11 +124,11 @@ export default function App() {
             </div>
           ) : (
             <>
-              {view === 'overview'     && <OverviewView store={store} go={setView} />}
-              {view === 'pedidos'      && <PedidosView store={store} />}
+              {view === 'overview'     && <OverviewView store={store} go={setView} hideValores={isFuncionaria} />}
+              {view === 'pedidos'      && <PedidosView store={store} hideValores={isFuncionaria} />}
               {view === 'comunicacoes' && <ComunicacoesView store={store} />}
               {view === 'tabela'       && <TabelaView />}
-              {view === 'papelaria'    && <PapelariaView store={store} />}
+              {view === 'papelaria'    && <PapelariaView store={store} hideValores={isFuncionaria} />}
               {view === 'ia'           && <IAView />}
             </>
           )}
