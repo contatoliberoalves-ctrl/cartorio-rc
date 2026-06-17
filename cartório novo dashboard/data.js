@@ -1,0 +1,111 @@
+export const INFO = {
+  nome: "Cartório de Registro Civil de Curral Queimado",
+  cidade: "Petrolina — PE",
+  responsavel: "Líbero Alves Rodrigues Filho",
+  vigencia: "Tabela de Emolumentos PE — exercício 2026 (Ato nº 1556/2025, TJPE)",
+};
+
+export const TIPOS = [
+  { id: "nascimento",      label: "Nascimento (1ª via)",            gratuito: true,  valor: 0,      grupo: "Registro" },
+  { id: "obito",           label: "Óbito (1ª via)",                 gratuito: true,  valor: 0,      grupo: "Registro" },
+  { id: "casamento",       label: "Casamento (habilitação)",        gratuito: false, valor: 237.84, grupo: "Casamento" },
+  { id: "conversao",       label: "Conversão união estável",        gratuito: false, valor: 237.84, grupo: "Casamento" },
+  { id: "2via_casamento",  label: "2ª via — Certidão casamento",    gratuito: false, valor: 55.62,  grupo: "Certidão" },
+  { id: "2via_nascimento", label: "2ª via — Certidão nascimento",   gratuito: false, valor: 55.62,  grupo: "Certidão" },
+  { id: "2via_obito",      label: "2ª via — Certidão óbito",        gratuito: false, valor: 55.62,  grupo: "Certidão" },
+  { id: "certidao_neg",    label: "Certidão negativa / busca",      gratuito: false, valor: 24.22,  grupo: "Certidão" },
+  { id: "divorcio",        label: "Divórcio (averbação)",           gratuito: false, valor: 143.39, grupo: "Averbação" },
+  { id: "retificacao",     label: "Retificação de registro",        gratuito: false, valor: 143.39, grupo: "Averbação" },
+  { id: "averbacao",       label: "Averbação à margem",             gratuito: false, valor: 143.39, grupo: "Averbação" },
+  { id: "adocao",          label: "Adoção",                         gratuito: false, valor: 133.71, grupo: "Registro" },
+  { id: "reconh_pat",      label: "Reconhecimento de paternidade",  gratuito: true,  valor: 0,      grupo: "Registro" },
+  { id: "livro_e",         label: "Registro no Livro E",            gratuito: false, valor: 143.39, grupo: "Registro" },
+];
+
+export const TABELA_H = [
+  { ato: "Casamento — habilitação (até a 1ª certidão)", valor: "R$ 237,84" },
+  { ato: "Casamento nuncupativo (inscrição + 1 certidão)", valor: "R$ 143,39" },
+  { ato: "Afixação de edital de proclamas de outro cartório", valor: "R$ 166,96" },
+  { ato: "Diligência p/ casamento fora do cartório", valor: "R$ 484,96" },
+  { ato: "Casamento à vista de habilitação de outro cartório", valor: "R$ 190,60" },
+  { ato: "Transcrição de casamento no estrangeiro (+1 certidão)", valor: "R$ 237,84" },
+  { ato: "Dispensa total ou parcial do prazo de proclamas", valor: "Gratuito" },
+  { ato: "Conversão de união estável em casamento", valor: "R$ 237,84" },
+  { ato: "Registro de nascimento ou óbito (1ª certidão)", valor: "Gratuito" },
+  { ato: "Registro de adoção (fora do Juízo da Inf. e Juv.)", valor: "R$ 133,71" },
+  { ato: "Emancipação, interdição, ausência, nacionalidade, Livro E", valor: "R$ 143,39" },
+  { ato: "Averbação à margem do assento (+ certidão)", valor: "R$ 143,39" },
+  { ato: "Retificação pela Lei 6.015/73 (processo)", valor: "R$ 143,39" },
+  { ato: "Retificação — por assento excedente", valor: "R$ 25,37" },
+  { ato: "Certidão de assento do registro", valor: "R$ 55,62" },
+  { ato: "Certidão negativa, inclusive buscas, por pessoa", valor: "R$ 24,22" },
+  { ato: "Reconhecimento de paternidade (Prov. 03/94)", valor: "Gratuito" },
+];
+
+export const TABELA_D = [
+  { ato: "Escritura sem conteúdo financeiro (pacto, emancipação, etc.)", valor: "R$ 237,84" },
+  { ato: "Escritura de declaração p/ INSS", valor: "R$ 48,91" },
+  { ato: "Testamento público / aprovação de cerrado", valor: "R$ 946,07" },
+  { ato: "Revogação de testamento", valor: "R$ 237,84" },
+  { ato: "Divórcio / separação / inventário — pessoas pobres", valor: "Gratuito" },
+  { ato: "Divórcio / inventário extrajudicial — sem bens", valor: "R$ 237,84" },
+  { ato: "Procuração — assistência e previdência social", valor: "R$ 39,48" },
+  { ato: "Procuração — administração / foro em geral", valor: "R$ 96,15" },
+  { ato: "Procuração em causa própria / com valor declarado", valor: "R$ 237,84" },
+  { ato: "Escritura de quitação (1ª folha)", valor: "R$ 143,39 + R$ 48,84/folha" },
+  { ato: "Reconhecimento de assinatura / firma", valor: "R$ 5,79" },
+  { ato: "Confecção e guarda do 1º cartão de assinaturas", valor: "R$ 3,24" },
+  { ato: "Autenticação — cópia reprográfica (por face)", valor: "R$ 4,93" },
+  { ato: "Autenticação — cópia de microfilme (por página)", valor: "R$ 9,20" },
+  { ato: "Certidão / traslado negativa (até 5 anos, 1ª folha)", valor: "R$ 13,54 + R$ 23,68/folha" },
+  { ato: "Pública-forma (1ª folha)", valor: "R$ 48,84" },
+  { ato: "Averbação (notas)", valor: "R$ 25,37" },
+  { ato: "Atos notariais não previstos", valor: "R$ 96,15 + R$ 48,84/página" },
+];
+
+export const FAIXAS_FINANCEIRO = {
+  minimo: 237.84, maximo: 7084.10,
+  faixas: [
+    [0,1000,237.84],[1000.01,2000,302.50],[2000.01,3000,334.88],[3000.01,4000,367.15],
+    [4000.01,5000,399.50],[5000.01,6000,431.87],[6000.01,7000,464.17],[7000.01,8000,496.47],
+    [8000.01,9000,528.81],[9000.01,10000,561.13],[10000.01,11000,593.48],[11000.01,12000,625.79],
+    [12000.01,13000,658.18],[13000.01,14000,690.46],[14000.01,15000,722.80],[15000.01,16000,755.17],
+    [16000.01,17000,787.44],[17000.01,18000,819.81],[18000.01,19000,852.15],[19000.01,20000,884.46],
+    [20000.01,25000,965.28],[25000.01,30000,1126.92],[30000.01,35000,1288.61],[35000.01,40000,1450.22],
+    [40000.01,45000,1611.88],[45000.01,50000,1773.53],[50000.01,60000,2096.79],[60000.01,70000,2420.11],
+    [70000.01,80000,2743.43],[80000.01,90000,3066.78],[90000.01,100000,3390.06],[100000.01,125000,4198.27],
+    [125000.01,150000,5006.54],[150000.01,175000,5814.82],[175000.01,200000,6623.08],[200000.01,210000,6946.38],
+    [210000.01,Infinity,7084.10],
+  ],
+};
+
+export const PAPELARIA = [
+  { id: "xerox_pb",   label: "Xerox — Preto e Branco",            valor: 0.50 },
+  { id: "xerox_cor",  label: "Xerox — Colorido",                  valor: 1.50 },
+  { id: "foto",       label: "Impressão folha fotográfica",       valor: 4.00 },
+  { id: "foto_ades",  label: "Impressão fotográfica adesiva",     valor: 5.00 },
+  { id: "plast_cert", label: "Plastificar certidão",              valor: 10.00 },
+  { id: "plast_doc",  label: "Plastificar documento (CPF)",       valor: 5.00 },
+  { id: "enc_peq",    label: "Encadernar espiral pequena + capa", valor: 6.00 },
+  { id: "enc_gra",    label: "Encadernar espiral grande + capa",  valor: 10.00 },
+  { id: "pasta_l",    label: "Pasta em L",                        valor: 5.00 },
+  { id: "contrato",   label: "Escrever um contrato",              valor: 20.00 },
+  { id: "caneta",     label: "Caneta Azul",                       valor: 2.50 },
+];
+
+export const COMUNICACOES = [
+  { id: "infodip", nome: "INFODIP WEB (TSE)", objeto: "Óbitos do mês anterior",
+    meio: "infodipweb.tse.jus.br", freq: "mensal", dia: 15, base: "Art. 677, III — CNPE" },
+  { id: "iitb", nome: "IITB", objeto: "Óbitos do mês anterior",
+    meio: "obitos@iitb.pe.gov.br", freq: "mensal", dia: 10, base: "Art. 677, VII — CNPE" },
+  { id: "sirc", nome: "SIRC (Dataprev)", objeto: "Nascimento, óbito, casamento e averbações (inclusive negativa)",
+    meio: "sirc.dataprev.gov.br", freq: "mensal", dia: 5, diaUtil: true, base: "Art. 678, p.u. — CNPE" },
+  { id: "junta", nome: "Junta de Alistamento Militar", objeto: "Óbitos de homens, 17 a 45 anos",
+    meio: "Envio físico", freq: "mensal", dia: 28, base: "Art. 677, IV — CNPE" },
+  { id: "ibge", nome: "IBGE", objeto: "Nascimentos, casamentos e óbitos do trimestre",
+    meio: "Arquivo CARTINF (.zip) — sistema do cartório", freq: "trimestral", dia: 8, base: "Art. 677, I — CNPE" },
+  { id: "ferc", nome: "Relatório FERC-PE", objeto: "Ressarcimento dos atos gratuitos (Fundo Especial Reg. Civil)",
+    meio: "Sistema FERC / TJPE", freq: "mensal", dia: 10, base: "Art. 28, Lei 11.404/96" },
+  { id: "mp", nome: "Ministério Público / CAOPIJ", objeto: "Cópia de assento — mãe/pai com menos de 14a9m no nascimento",
+    meio: "Ofício + assento (Malote Digital)", freq: "evento", base: "Art. 681 — CNPE" },
+];
