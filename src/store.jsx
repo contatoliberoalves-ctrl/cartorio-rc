@@ -157,6 +157,21 @@ export function useStore() {
       if (!r.error) setTarefas(prev => prev.filter(x => x.id !== id));
       return r;
     },
+
+    uploadPedidoDoc: async (pedidoId, file) => {
+      const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const path = `${pedidoId}/${Date.now()}-${safe}`;
+      const { error } = await supabase.storage.from('pedido-docs').upload(path, file);
+      if (error) throw error;
+      return { name: file.name, path, type: file.type, size: file.size };
+    },
+    getDocUrl: async (path) => {
+      const { data } = await supabase.storage.from('pedido-docs').createSignedUrl(path, 3600);
+      return data?.signedUrl || null;
+    },
+    deleteDoc: async (path) => {
+      return supabase.storage.from('pedido-docs').remove([path]);
+    },
   }), [pedidos, vendas, comunicacoes, tarefas, loading, error, session, authChecked, profile]);
 
   return api;
