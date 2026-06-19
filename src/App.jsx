@@ -10,7 +10,8 @@ import ComunicacoesView from './views/comunicacoes.jsx';
 import TabelaView       from './views/tabela.jsx';
 import PapelariaView    from './views/papelaria.jsx';
 import IAView           from './views/ia.jsx';
-import PendenciasView   from './views/pendencias.jsx';
+import PendenciasView    from './views/pendencias.jsx';
+import AgendamentosView  from './views/agendamentos.jsx';
 
 const NAV = [
   { id: 'overview',     label: 'Visão geral',         icon: 'home' },
@@ -18,6 +19,7 @@ const NAV = [
   { id: 'comunicacoes', label: 'Comunicações',         icon: 'bell' },
   { id: 'tabela',       label: 'Emolumentos PE',       icon: 'table' },
   { id: 'papelaria',    label: 'Papelaria',            icon: 'print' },
+  { id: 'agendamentos', label: 'Agendamentos',           icon: 'calendar' },
   { id: 'pendencias',   label: 'Pendências',            icon: 'list' },
   { id: 'ia',           label: 'Assistente IA',        icon: 'sparkles' },
 ];
@@ -28,6 +30,7 @@ const TITULOS = {
   comunicacoes: ['Comunicações obrigatórias',  'Prazos legais e envios periódicos'],
   tabela:       ['Tabela de Emolumentos — PE', 'Valores vigentes do Estado de Pernambuco (2026)'],
   papelaria:    ['Papelaria e serviços',        'Lançamentos e controle de caixa'],
+  agendamentos: ['Agendamentos',                'Visitas e atendimentos marcados'],
   pendencias:   ['Pendências',                  'Tarefas e prazos do cartório'],
   ia:           ['Assistente jurídico',         'Dúvidas com base nas normas e na legislação'],
 };
@@ -132,6 +135,7 @@ export default function App() {
               {view === 'comunicacoes' && <ComunicacoesView store={store} />}
               {view === 'tabela'       && <TabelaView />}
               {view === 'papelaria'    && <PapelariaView store={store} hideValores={isFuncionaria} />}
+              {view === 'agendamentos' && <AgendamentosView store={store} />}
               {view === 'pendencias'   && <PendenciasView store={store} />}
               {view === 'ia'           && <IAView />}
             </>

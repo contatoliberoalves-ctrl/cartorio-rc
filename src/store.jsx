@@ -10,6 +10,7 @@ export function useStore() {
   const [comunicacoes, setComunicacoes] = useState({});
   const [tarefas, setTarefas] = useState([]);
   const [pendencias, setPendencias] = useState([]);
+  const [agendamentos, setAgendamentos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -33,12 +34,13 @@ export function useStore() {
 
   const fetchAll = useCallback(async () => {
     try {
-      const [pedRes, venRes, comRes, tarRes, pendRes] = await Promise.all([
+      const [pedRes, venRes, comRes, tarRes, pendRes, agRes] = await Promise.all([
         supabase.from('pedidos').select('*').order('created_at', { ascending: false }),
         supabase.from('vendas').select('*').order('created_at', { ascending: false }),
         supabase.from('comunicacoes_feitas').select('*'),
         supabase.from('tarefas').select('*').order('created_at', { ascending: true }),
         supabase.from('pendencias').select('*').order('created_at', { ascending: false }),
+        supabase.from('agendamentos').select('*').order('data', { ascending: true }),
       ]);
       if (pedRes.error) throw pedRes.error;
       setPedidos(pedRes.data || []);
@@ -48,6 +50,7 @@ export function useStore() {
       setComunicacoes(map);
       setTarefas(tarRes.data || []);
       setPendencias(pendRes.data || []);
+      setAgendamentos(agRes.data || []);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -86,13 +89,17 @@ export function useStore() {
         supabase.from('pendencias').select('*').order('created_at', { ascending: false })
           .then(r => { if (!r.error) setPendencias(r.data); })
       )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'agendamentos' }, () =>
+        supabase.from('agendamentos').select('*').order('data', { ascending: true })
+          .then(r => { if (!r.error) setAgendamentos(r.data); })
+      )
       .subscribe();
 
     return () => { supabase.removeChannel(ch); };
   }, [session, fetchAll]);
 
   const api = useMemo(() => ({
-    state: { pedidos, vendas, comunicacoes, tarefas, pendencias },
+    state: { pedidos, vendas, comunicacoes, tarefas, pendencias, agendamentos },
     loading,
     error,
     session,
@@ -165,6 +172,22 @@ export function useStore() {
       return r;
     },
 
+    addAgendamento: async (a) => {
+      const r = await supabase.from('agendamentos').insert(a).select();
+      if (!r.error && r.data) setAgendamentos(prev => [...prev, r.data[0]].sort((x,y) => x.data.localeCompare(y.data)));
+      return r;
+    },
+    updateAgendamento: async (id, patch) => {
+      const r = await supabase.from('agendamentos').update({ ...patch, updated_at: new Date().toISOString() }).eq('id', id).select();
+      if (!r.error && r.data) setAgendamentos(prev => prev.map(x => x.id === id ? r.data[0] : x));
+      return r;
+    },
+    delAgendamento: async (id) => {
+      const r = await supabase.from('agendamentos').delete().eq('id', id);
+      if (!r.error) setAgendamentos(prev => prev.filter(x => x.id !== id));
+      return r;
+    },
+
     addPendencia: async (p) => {
       const r = await supabase.from('pendencias').insert(p).select();
       if (!r.error && r.data) setPendencias(prev => [r.data[0], ...prev]);
@@ -195,7 +218,7 @@ export function useStore() {
     deleteDoc: async (path) => {
       return supabase.storage.from('pedido-docs').remove([path]);
     },
-  }), [pedidos, vendas, comunicacoes, tarefas, pendencias, loading, error, session, authChecked, profile]);
+  }), [pedidos, vendas, comunicacoes, tarefas, pendencias, agendamentos, loading, error, session, authChecked, profile]);
 
   return api;
 }
